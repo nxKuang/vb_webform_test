@@ -26,6 +26,7 @@
         });
 
         function ajaxGetData() {
+
             $.ajax({
                 type: "POST",
                 url: "default.aspx/getHighChartMain",
@@ -34,14 +35,13 @@
                 dataType: "json",
                 success: function (response) {
                     var result = JSON.parse(response.d);
+
                     drawChart(result);
                 }
             })
         }
 
         function drawChart(data) {
-             
-
             $('#container').highcharts({
                 chart: {
                     events: {
@@ -66,33 +66,37 @@
                                         }
 
                                     }
-                                $.ajax({
-                                    type: "POST",
-                                    url: "default.aspx/getHighChartDrilldown",
-                                    contentType: "application/json; charset=utf-8",
-                                    data: JSON.stringify({ varDrillDown: e.point.name }),
-                                    dataType: "json",
-                                    success: function (response) {
-                                        //console.log("ajax call success ");
-                                        //var data = {
-                                        //        S1: [['D1', 2], ['D2', 3], ['D3', 3]],
-                                        //        S2: [['D1', 8], ['D2', 7], ['D3', 3]],
-                                        //        S3: [['D1', 6], ['D2', 4], ['D3', 3]]
-                                        //}  
-                                        //console.log(data);   
-                                        var result = JSON.parse(response.d);
-                                        //console.log(result);
-                                        for (x in drilldowns) {
-                                            drilldowns[x]['data'] = result[x];
-                                            chart.addSingleSeriesAsDrilldown(e.point, drilldowns[x]);
-                                        }
-                                        chart.applyDrilldown();
+                                chart.showLoading('Loading data ...');
+                                setTimeout(function () {
+                                    $.ajax({
+                                        type: "POST",
+                                        url: "default.aspx/getHighChartDrilldown",
+                                        contentType: "application/json; charset=utf-8",
+                                        data: JSON.stringify({ varDrillDown: e.point.name }),
+                                        dataType: "json",
+                                        success: function (response) {
+                                            //console.log("ajax call success ");
+                                            //var data = {
+                                            //        S1: [['D1', 2], ['D2', 3], ['D3', 3]],
+                                            //        S2: [['D1', 8], ['D2', 7], ['D3', 3]],
+                                            //        S3: [['D1', 6], ['D2', 4], ['D3', 3]]
+                                            //}  
+                                            //console.log(data);   
+                                            var result = JSON.parse(response.d);
+                                            //console.log(result);
+                                            for (x in drilldowns) {
+                                                drilldowns[x]['data'] = result[x];
+                                                chart.addSingleSeriesAsDrilldown(e.point, drilldowns[x]);
+                                            }
+                                            chart.hideLoading();
+                                            chart.applyDrilldown();
 
-                                    },
-                                    failure: function (response) {
-                                        console.log("ajax call failure: " + response);
-                                    }
-                                });
+                                        },
+                                        failure: function (response) {
+                                            console.log("ajax call failure: " + response);
+                                        }
+                                    });
+                                }, 5000);
                             }
                         }
                     }
@@ -134,20 +138,13 @@
                     data: data.S3
                 }],
                 drilldown: {
-                    series: []                   
+                    series: []
                 }
-                
+
             });
 
-           
+
         }
-    </script>
-    <script>         
-        $(function () {
-
-            // Create the chart
-
-        });
     </script>
 </head>
 <body>
