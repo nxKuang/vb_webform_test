@@ -11,6 +11,7 @@
 <script src="https://code.highcharts.com/modules/oldie.js"></script>
 <![endif]-->
     <script>
+        var NNM_dashboard;
         $(document).ready(function () {
             Highcharts.setOptions({
                 lang: {
@@ -26,7 +27,8 @@
         });
 
         function ajaxGetData() {
-
+            drawChart();
+            NNM_dashboard.showLoading('Loading data ...');
             $.ajax({
                 type: "POST",
                 url: "default.aspx/getHighChartMain",
@@ -35,113 +37,120 @@
                 dataType: "json",
                 success: function (response) {
                     var result = JSON.parse(response.d);
-
-                    drawChart(result);
+                    NNM_dashboard.hideLoading();
+                    NNM_dashboard.series[0].setData(result.S1);
+                    NNM_dashboard.series[1].setData(result.S2);
+                    NNM_dashboard.series[2].setData(result.S3);
                 }
             })
         }
 
-        function drawChart(data) {
-            $('#container').highcharts({
-                chart: {
-                    events: {
-                        drilldown: function (e) {
-                            if (!e.seriesOptions) {
-                                var chart = this,
-                                    drilldowns = {
-                                        'S1': {
-                                            name: 'inflow',
-                                            type: 'column',
-                                            color: '#3150b4'
-                                        },
-                                        'S2': {
-                                            name: 'outflow',
-                                            type: 'column',
-                                            color: '#50B432'
-                                        },
-                                        'S3': {
-                                            name: 'NNM',
-                                            type: 'spline',
-                                            color: '#000000'
-                                        }
-
-                                    }
-                                chart.showLoading('Loading data ...');
-                                setTimeout(function () {
-                                    $.ajax({
-                                        type: "POST",
-                                        url: "default.aspx/getHighChartDrilldown",
-                                        contentType: "application/json; charset=utf-8",
-                                        data: JSON.stringify({ varDrillDown: e.point.name }),
-                                        dataType: "json",
-                                        success: function (response) {
-                                            //console.log("ajax call success ");
-                                            //var data = {
-                                            //        S1: [['D1', 2], ['D2', 3], ['D3', 3]],
-                                            //        S2: [['D1', 8], ['D2', 7], ['D3', 3]],
-                                            //        S3: [['D1', 6], ['D2', 4], ['D3', 3]]
-                                            //}  
-                                            //console.log(data);   
-                                            var result = JSON.parse(response.d);
-                                            //console.log(result);
-                                            for (x in drilldowns) {
-                                                drilldowns[x]['data'] = result[x];
-                                                chart.addSingleSeriesAsDrilldown(e.point, drilldowns[x]);
+        function drawChart() {
+            NNM_dashboard = new Highcharts.Chart(
+                {
+                    chart: {
+                        renderTo: 'container',
+                        events: {
+                            drilldown: function (e) {
+                                if (!e.seriesOptions) {
+                                    var chart = this,
+                                        drilldowns = {
+                                            'S1': {
+                                                name: 'inflow',
+                                                type: 'column',
+                                                color: '#3150b4'
+                                            },
+                                            'S2': {
+                                                name: 'outflow',
+                                                type: 'column',
+                                                color: '#50B432'
+                                            },
+                                            'S3': {
+                                                name: 'NNM',
+                                                type: 'spline',
+                                                color: '#000000'
                                             }
-                                            chart.hideLoading();
-                                            chart.applyDrilldown();
 
-                                        },
-                                        failure: function (response) {
-                                            console.log("ajax call failure: " + response);
                                         }
-                                    });
-                                }, 5000);
+                                    chart.showLoading('Loading data ...');
+                                    setTimeout(function () {
+                                        $.ajax({
+                                            type: "POST",
+                                            url: "default.aspx/getHighChartDrilldown",
+                                            contentType: "application/json; charset=utf-8",
+                                            data: JSON.stringify({ varDrillDown: e.point.name }),
+                                            dataType: "json",
+                                            success: function (response) {
+                                                //console.log("ajax call success ");
+                                                //var data = {
+                                                //        S1: [['D1', 2], ['D2', 3], ['D3', 3]],
+                                                //        S2: [['D1', 8], ['D2', 7], ['D3', 3]],
+                                                //        S3: [['D1', 6], ['D2', 4], ['D3', 3]]
+                                                //}  
+                                                //console.log(data);   
+                                                var result = JSON.parse(response.d);
+                                                //console.log(result);
+                                                for (x in drilldowns) {
+                                                    drilldowns[x]['data'] = result[x];
+                                                    chart.addSingleSeriesAsDrilldown(e.point, drilldowns[x]);
+                                                }
+                                                chart.hideLoading();
+                                                chart.applyDrilldown();
+
+                                            },
+                                            failure: function (response) {
+                                                console.log("ajax call failure: " + response);
+                                            }
+                                        });
+                                    }, 5000);
+                                }
                             }
                         }
-                    }
-                },
-                title: {
-                    text: 'Async drilldown'
-                },
-                xAxis: {
-                    type: 'category'
-                },
-                legend: {
-                    enabled: false
-                },
-                plotOptions: {
-                    column: { stacking: 'normal' },
-                    series: {
-                        borderWidth: 0,
-                        dataLabels: {
-                            enabled: true,
-                            style: { textShadow: false, fontSize: '1vw' }
+                    },
+                    title: {
+                        text: 'Async drilldown'
+                    },
+                    xAxis: {
+                        type: 'category'
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        column: { stacking: 'normal' },
+                        series: {
+                            borderWidth: 0,
+                            dataLabels: {
+                                enabled: true,
+                                style: { textShadow: false, fontSize: '1vw' }
+                            }
                         }
+                    },
+                    series: [{
+                        name: 'outflow',
+                        type: 'column',
+                        color: '#3150b4',
+                        //data: data.S1
+                        data: [['', 0]]
+                    }, {
+                        name: 'inflow',
+                        type: 'column',
+                        color: '#50B432',
+                        //data: data.S2
+                        data: [['', 0]]
                     }
-                },
-                series: [{
-                    name: 'outflow',
-                    type: 'column',
-                    color: '#3150b4',
-                    data: data.S1
-                }, {
-                    name: 'inflow',
-                    type: 'column',
-                    color: '#50B432',
-                    data: data.S2
-                }
-                    , {
-                    name: 'NNM',
-                    type: 'spline',
-                    color: '#000000',
-                    data: data.S3
-                }],
-                drilldown: {
-                    series: []
-                }
+                        , {
+                        name: 'NNM',
+                        type: 'spline',
+                        color: '#000000',
+                        //data: data.S3
+                        data: [['', 0]]
+                    }],
+                    drilldown: {
+                        series: []
+                    }
+                })
 
-            });
 
 
         }
