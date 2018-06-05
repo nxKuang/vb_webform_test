@@ -11,10 +11,12 @@ Partial Class _Default
     Protected highchartsData As String
 
     Private Sub _Default_Init(sender As Object, e As EventArgs) Handles Me.Init
-        getHighChartMain()
+
     End Sub
 
-    Private Sub getHighChartMain()
+    <WebMethod()> _
+    <ScriptMethod(ResponseFormat:=ResponseFormat.Json)> _
+    Shared Function getHighChartMain(ByVal pcCode As String) As String
         Dim dt As DataTable = New DataTable("monthMMN")
 
         dt.Columns.Add("key", GetType(System.String))
@@ -62,49 +64,53 @@ Partial Class _Default
                     packet.Add(dc.ColumnName, series)
                 End If
             Next
-
-            highchartsData = jsonSerializer.Serialize(packet)
+            Return jsonSerializer.Serialize(packet)
         Catch ex As Exception
-            highchartsData = "nothing"
+            Throw ex
         End Try
 
-    End Sub
+    End Function
 
     <WebMethod()> _
     <ScriptMethod(ResponseFormat:=ResponseFormat.Json)> _
     Public Shared Function getHighChartDrilldown(ByVal varDrillDown As String) As String
-        Dim d As String = varDrillDown
-        Dim dt As DataTable = New DataTable("dailyMMN")
 
-        dt.Columns.Add("key", GetType(System.String))
-        dt.Columns.Add("S1", GetType(System.Decimal))
-        dt.Columns.Add("S2", GetType(System.Decimal))
-        dt.Columns.Add("S3", GetType(System.Decimal))
-
-        dt.Rows.Add("Mar-01", 10, -3, 7)
-        dt.Rows.Add("Mar-02", 12, -1, 11)
-        dt.Rows.Add("Mar-03", 5, -8, -3)
-
-
-        'var Data = {
-        'S1:  [['D1', 2], ['D2', 3]],
-        'S2: [['D1', 8], ['D2', 7]],
-        'S3: [['D1', 6], ['D2', 4]]
-        '}
-
-        'Dim packet As New List(Of Dictionary(Of String, Object))()
-        Dim packet As New Dictionary(Of String, Object)
-        Dim point As List(Of Object)
-        Dim series As List(Of Object)
-        Dim jsonSerializer As New System.Web.Script.Serialization.JavaScriptSerializer()
-
-        'For Each dc As DataColumn In dt.Columns
-        '    If dc.ColumnName <> "key" Then
-
-        '    End If
-        '    j = j + "Series" + seriesCount.ToString
-        'Next
         Try
+            Dim d As String = varDrillDown
+            Dim dt As DataTable = New DataTable("dailyMMN")
+
+            dt.Columns.Add("key", GetType(System.String))
+            dt.Columns.Add("S1", GetType(System.Decimal))
+            dt.Columns.Add("S2", GetType(System.Decimal))
+            dt.Columns.Add("S3", GetType(System.Decimal))
+
+            'dt.Rows.Add("Mar-01", 10, -3, 7)
+            'dt.Rows.Add("Mar-02", 12, -1, 11)
+            'dt.Rows.Add("Mar-03", 5, -8, -3)
+
+            For i As Integer = 1 To 30
+                dt.Rows.Add(varDrillDown + " - " + i.ToString, Rnd() * 100, Rnd() * -100, Rnd() * 100 - Rnd() * -100)
+            Next
+
+
+            'var Data = {
+            'S1:  [['D1', 2], ['D2', 3]],
+            'S2: [['D1', 8], ['D2', 7]],
+            'S3: [['D1', 6], ['D2', 4]]
+            '}
+
+            'Dim packet As New List(Of Dictionary(Of String, Object))()
+            Dim packet As New Dictionary(Of String, Object)
+            Dim point As List(Of Object)
+            Dim series As List(Of Object)
+            Dim jsonSerializer As New System.Web.Script.Serialization.JavaScriptSerializer()
+
+            'For Each dc As DataColumn In dt.Columns
+            '    If dc.ColumnName <> "key" Then
+
+            '    End If
+            '    j = j + "Series" + seriesCount.ToString
+            'Next
             For Each dc As DataColumn In dt.Columns
 
                 If dc.ColumnName <> "key" Then
@@ -118,10 +124,9 @@ Partial Class _Default
                     packet.Add(dc.ColumnName, series)
                 End If
             Next
-
             Return jsonSerializer.Serialize(packet)
         Catch ex As Exception
-            Return "error"
+            Throw ex
         End Try
 
     End Function

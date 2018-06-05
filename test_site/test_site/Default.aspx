@@ -11,13 +11,37 @@
 <script src="https://code.highcharts.com/modules/oldie.js"></script>
 <![endif]-->
     <script>
-        $(document).ready(function () {            
+        $(document).ready(function () {
+            Highcharts.setOptions({
+                lang: {
+                    drillUpText: ' < Back to previous'
+                }
+            })
+
+            ajaxGetData();
+
+            $("#testClick1").on("click", function () {
+                ajaxGetData()
+            });
         });
-    </script>
-    <script>         
-        $(function () {
-            var hcData = <%Response.Write(highchartsData)%>;       
-            // Create the chart
+
+        function ajaxGetData() {
+            $.ajax({
+                type: "POST",
+                url: "default.aspx/getHighChartMain",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({ pcCode: "" }),
+                dataType: "json",
+                success: function (response) {
+                    var result = JSON.parse(response.d);
+                    drawChart(result);
+                }
+            })
+        }
+
+        function drawChart(data) {
+             
+
             $('#container').highcharts({
                 chart: {
                     events: {
@@ -96,29 +120,39 @@
                     name: 'outflow',
                     type: 'column',
                     color: '#3150b4',
-                    data : hcData.S1                    
+                    data: data.S1
                 }, {
                     name: 'inflow',
                     type: 'column',
                     color: '#50B432',
-                    data : hcData.S2                    
+                    data: data.S2
                 }
                     , {
                     name: 'NNM',
                     type: 'spline',
                     color: '#000000',
-                    data : hcData.S3                    
+                    data: data.S3
                 }],
                 drilldown: {
-                    series: []
+                    series: []                   
                 }
+                
             });
+
+           
+        }
+    </script>
+    <script>         
+        $(function () {
+
+            // Create the chart
+
         });
     </script>
 </head>
 <body>
     <form id="form1" runat="server">
-        <div id="testClick1">test 1</div>
+        <div id="testClick1">Click to refresh data</div>
         <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
         <div id="testClick2">test 2</div>
     </form>
