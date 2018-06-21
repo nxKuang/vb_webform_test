@@ -1,4 +1,4 @@
-﻿<%@ Page Language="VB" AutoEventWireup="false" CodeFile="Default.aspx.vb" Inherits="_Default" %>
+﻿<%@ Page Language="VB" AutoEventWireup="false" CodeFile="highcharts_test.aspx.vb" Inherits="_Default" %>
 
 <!DOCTYPE html>
 <html>
